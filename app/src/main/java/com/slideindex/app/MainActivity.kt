@@ -18,6 +18,7 @@ import com.slideindex.app.service.OverlayService
 import com.slideindex.app.settings.AppSettings
 import com.slideindex.app.ui.FreeWindowPreviewScreen
 import com.slideindex.app.ui.FreeWindowSettingsScreen
+import com.slideindex.app.ui.HiddenAppsScreen
 import com.slideindex.app.ui.MainScreen
 import com.slideindex.app.ui.SettingsDestination
 import com.slideindex.app.ui.theme.SlideIndexTheme
@@ -122,8 +123,26 @@ class MainActivity : ComponentActivity() {
                         onOpenFreeWindowSettings = {
                             destination = SettingsDestination.FreeWindow
                         },
+                        onOpenHiddenAppsSettings = {
+                            destination = SettingsDestination.HiddenApps
+                        },
                         onThemeColorChange = { color ->
                             lifecycleScope.launch { app.settingsRepository.setThemeColor(color) }
+                        },
+                    )
+
+                    SettingsDestination.HiddenApps -> HiddenAppsScreen(
+                        settings = settings,
+                        onBack = { destination = SettingsDestination.Main },
+                        onHideApp = { packageName ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.addHiddenApp(packageName)
+                            }
+                        },
+                        onUnhideApp = { packageName ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.removeHiddenApp(packageName)
+                            }
                         },
                     )
 

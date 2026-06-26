@@ -20,5 +20,6 @@ data class AppSettings(
     val freeWindowTopFraction: Float = 0.15f,
     val appLaunchPolicyId: Int = AppLaunchPolicy.ALWAYS_FULLSCREEN.id,
     val longPressLaunchDurationMs: Int = 450,
+    val hiddenAppPackages: Set<String> = emptySet(),
     val themeColorArgb: Int = 0xFF6750A4.toInt(),
 )

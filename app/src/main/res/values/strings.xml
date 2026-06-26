@@ -66,4 +66,15 @@
     <string name="long_press_launch_duration">长按触发时间</string>
     <string name="long_press_launch_duration_desc">在应用图标上按住达到该时间后，松开将使用另一种打开方式</string>
     <string name="long_press_launch_duration_value">%1$d 毫秒</string>
+    <string name="hidden_apps_entry_title">隐藏应用</string>
+    <string name="hidden_apps_entry_desc">从侧滑索引列表中隐藏指定应用</string>
+    <string name="hidden_apps_title">隐藏应用</string>
+    <string name="hidden_apps_desc">已隐藏的应用不会出现在侧滑索引面板中，但仍可通过系统桌面等方式打开。</string>
+    <string name="hidden_apps_section_hidden">已隐藏</string>
+    <string name="hidden_apps_section_add">添加隐藏</string>
+    <string name="hidden_apps_empty">暂无隐藏应用</string>
+    <string name="hidden_apps_all_hidden">所有应用均已隐藏</string>
+    <string name="hidden_apps_hide">隐藏</string>
+    <string name="hidden_apps_unhide">取消隐藏</string>
+    <string name="hidden_apps_uninstalled">应用已卸载</string>
 </resources>

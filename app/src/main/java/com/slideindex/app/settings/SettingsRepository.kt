@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -36,6 +37,7 @@ class SettingsRepository(private val context: Context) {
             freeWindowTopFraction = prefs[FREE_WINDOW_TOP] ?: 0.15f,
             appLaunchPolicyId = prefs[APP_LAUNCH_POLICY] ?: legacyLaunchPolicy(prefs),
             longPressLaunchDurationMs = prefs[LONG_PRESS_LAUNCH_DURATION] ?: 450,
+            hiddenAppPackages = prefs[HIDDEN_APP_PACKAGES] ?: emptySet(),
             themeColorArgb = prefs[THEME_COLOR] ?: 0xFF6750A4.toInt(),
         )
     }
@@ -77,6 +79,16 @@ class SettingsRepository(private val context: Context) {
     suspend fun setLongPressLaunchDurationMs(value: Int) = edit {
         it[LONG_PRESS_LAUNCH_DURATION] = value.coerceIn(250, 900)
     }
+    suspend fun addHiddenApp(packageName: String) = edit {
+        val current = it[HIDDEN_APP_PACKAGES]?.toMutableSet() ?: mutableSetOf()
+        current.add(packageName)
+        it[HIDDEN_APP_PACKAGES] = current
+    }
+    suspend fun removeHiddenApp(packageName: String) = edit {
+        val current = it[HIDDEN_APP_PACKAGES]?.toMutableSet() ?: return@edit
+        current.remove(packageName)
+        it[HIDDEN_APP_PACKAGES] = current
+    }
     suspend fun setThemeColor(argb: Int) = edit { it[THEME_COLOR] = argb }
 
     private fun legacyLaunchPolicy(prefs: Preferences): Int {
@@ -113,6 +125,7 @@ class SettingsRepository(private val context: Context) {
         private val FREE_WINDOW_TOP = floatPreferencesKey("free_window_top_fraction")
         private val APP_LAUNCH_POLICY = intPreferencesKey("app_launch_policy_id")
         private val LONG_PRESS_LAUNCH_DURATION = intPreferencesKey("long_press_launch_duration_ms")
+        private val HIDDEN_APP_PACKAGES = stringSetPreferencesKey("hidden_app_packages")
         private val THEME_COLOR = intPreferencesKey("theme_color_argb")
     }
 }

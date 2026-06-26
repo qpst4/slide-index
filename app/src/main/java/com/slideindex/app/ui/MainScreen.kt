@@ -54,6 +54,7 @@ fun MainScreen(
     onLayoutPreviewStart: () -> Unit,
     onLayoutPreviewStop: () -> Unit,
     onOpenFreeWindowSettings: () -> Unit,
+    onOpenHiddenAppsSettings: () -> Unit,
     onThemeColorChange: (Int) -> Unit,
 ) {
     Column(
@@ -214,6 +215,8 @@ fun MainScreen(
         )
 
         FreeWindowEntryCard(onClick = onOpenFreeWindowSettings)
+
+        HiddenAppsEntryCard(onClick = onOpenHiddenAppsSettings)
     }
 }
 

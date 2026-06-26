@@ -29,6 +29,7 @@ class SideOverlayController(
     private val density get() = context.resources.displayMetrics.density
 
     fun updateSettings(newSettings: AppSettings, screenWidth: Int) {
+        val hiddenChanged = newSettings.hiddenAppPackages != settings.hiddenAppPackages
         settings = newSettings
         screenHeightPx = context.resources.displayMetrics.heightPixels
         overlayView?.applySettings(newSettings, screenWidth)
@@ -41,6 +42,9 @@ class SideOverlayController(
             runCatching { windowManager.updateViewLayout(overlayView, windowParams) }
         } else if (previewMode) {
             overlayView?.invalidate()
+        }
+        if (hiddenChanged) {
+            preloadApps()
         }
     }
 
@@ -183,6 +187,7 @@ class SideOverlayController(
         loadJob?.cancel()
         loadJob = scope.launch {
             val apps = appRepository.loadApps(force = force)
+                .filter { it.packageName !in settings.hiddenAppPackages }
             overlayView?.setApps(apps)
         }
     }
