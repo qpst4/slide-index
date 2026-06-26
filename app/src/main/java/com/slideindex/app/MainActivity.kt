@@ -10,12 +10,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.slideindex.app.service.OverlayService
 import com.slideindex.app.settings.AppSettings
+import com.slideindex.app.ui.FreeWindowPreviewScreen
+import com.slideindex.app.ui.FreeWindowSettingsScreen
 import com.slideindex.app.ui.MainScreen
+import com.slideindex.app.ui.SettingsDestination
 import com.slideindex.app.ui.theme.SlideIndexTheme
 import com.slideindex.app.util.HapticHelper
 import com.slideindex.app.util.PermissionHelper
@@ -43,80 +47,122 @@ class MainActivity : ComponentActivity() {
             val settings by app.settingsRepository.settings.collectAsStateWithLifecycle(
                 initialValue = AppSettings(),
             )
+            var destination by remember { mutableStateOf(SettingsDestination.Main) }
             SlideIndexTheme(
                 seedColor = androidx.compose.ui.graphics.Color(settings.themeColorArgb),
             ) {
-                MainScreen(
-                    settings = settings,
-                    overlayGranted = overlayGranted,
-                    notificationGranted = notificationGranted,
-                    onRequestOverlay = {
-                        startActivity(PermissionHelper.overlaySettingsIntent(this))
-                    },
-                    onRequestNotification = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                    },
-                    onServiceEnabledChange = { enabled ->
-                        lifecycleScope.launch {
-                            app.settingsRepository.setServiceEnabled(enabled)
-                            refreshServiceState()
-                        }
-                    },
-                    onLeftEdgeChange = { enabled ->
-                        lifecycleScope.launch { app.settingsRepository.setLeftEdgeEnabled(enabled) }
-                    },
-                    onRightEdgeChange = { enabled ->
-                        lifecycleScope.launch { app.settingsRepository.setRightEdgeEnabled(enabled) }
-                    },
-                    onEdgeWidthChange = { value ->
-                        lifecycleScope.launch { app.settingsRepository.setEdgeTriggerWidthDp(value) }
-                    },
-                    onTriggerTopChange = { value ->
-                        lifecycleScope.launch { app.settingsRepository.setTriggerTopFraction(value) }
-                    },
-                    onTriggerHeightChange = { value ->
-                        lifecycleScope.launch { app.settingsRepository.setTriggerHeightFraction(value) }
-                    },
-                    onIndexHeightChange = { value ->
-                        lifecycleScope.launch { app.settingsRepository.setIndexHeightFraction(value) }
-                    },
-                    onAppsPerRowChange = { value ->
-                        lifecycleScope.launch { app.settingsRepository.setAppsPerRow(value) }
-                    },
-                    onPanelOpacityChange = { value ->
-                        lifecycleScope.launch { app.settingsRepository.setPanelOpacity(value) }
-                    },
-                    onHapticEnabledChange = { enabled ->
-                        lifecycleScope.launch {
-                            app.settingsRepository.setHapticEnabled(enabled)
-                            if (enabled) {
-                                val latest = app.settingsRepository.settings.first()
-                                HapticHelper.preview(window.decorView, latest.copy(hapticEnabled = true))
+                when (destination) {
+                    SettingsDestination.Main -> MainScreen(
+                        settings = settings,
+                        overlayGranted = overlayGranted,
+                        notificationGranted = notificationGranted,
+                        onRequestOverlay = {
+                            startActivity(PermissionHelper.overlaySettingsIntent(this))
+                        },
+                        onRequestNotification = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                             }
-                        }
-                    },
-                    onHapticStrengthChange = { level ->
-                        lifecycleScope.launch {
-                            app.settingsRepository.setHapticStrengthLevel(level)
-                            val latest = app.settingsRepository.settings.first()
-                            HapticHelper.preview(
-                                window.decorView,
-                                latest.copy(hapticEnabled = true, hapticStrengthLevel = level),
-                            )
-                        }
-                    },
-                    onLayoutPreviewStart = {
-                        sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_START)
-                    },
-                    onLayoutPreviewStop = {
-                        sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_STOP)
-                    },
-                    onThemeColorChange = { color ->
-                        lifecycleScope.launch { app.settingsRepository.setThemeColor(color) }
-                    },
-                )
+                        },
+                        onServiceEnabledChange = { enabled ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setServiceEnabled(enabled)
+                                refreshServiceState()
+                            }
+                        },
+                        onLeftEdgeChange = { enabled ->
+                            lifecycleScope.launch { app.settingsRepository.setLeftEdgeEnabled(enabled) }
+                        },
+                        onRightEdgeChange = { enabled ->
+                            lifecycleScope.launch { app.settingsRepository.setRightEdgeEnabled(enabled) }
+                        },
+                        onEdgeWidthChange = { value ->
+                            lifecycleScope.launch { app.settingsRepository.setEdgeTriggerWidthDp(value) }
+                        },
+                        onTriggerTopChange = { value ->
+                            lifecycleScope.launch { app.settingsRepository.setTriggerTopFraction(value) }
+                        },
+                        onTriggerHeightChange = { value ->
+                            lifecycleScope.launch { app.settingsRepository.setTriggerHeightFraction(value) }
+                        },
+                        onIndexHeightChange = { value ->
+                            lifecycleScope.launch { app.settingsRepository.setIndexHeightFraction(value) }
+                        },
+                        onAppsPerRowChange = { value ->
+                            lifecycleScope.launch { app.settingsRepository.setAppsPerRow(value) }
+                        },
+                        onPanelOpacityChange = { value ->
+                            lifecycleScope.launch { app.settingsRepository.setPanelOpacity(value) }
+                        },
+                        onHapticEnabledChange = { enabled ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setHapticEnabled(enabled)
+                                if (enabled) {
+                                    val latest = app.settingsRepository.settings.first()
+                                    HapticHelper.preview(window.decorView, latest.copy(hapticEnabled = true))
+                                }
+                            }
+                        },
+                        onHapticStrengthChange = { level ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setHapticStrengthLevel(level)
+                                val latest = app.settingsRepository.settings.first()
+                                HapticHelper.preview(
+                                    window.decorView,
+                                    latest.copy(hapticEnabled = true, hapticStrengthLevel = level),
+                                )
+                            }
+                        },
+                        onLayoutPreviewStart = {
+                            sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_START)
+                        },
+                        onLayoutPreviewStop = {
+                            sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_STOP)
+                        },
+                        onOpenFreeWindowSettings = {
+                            destination = SettingsDestination.FreeWindow
+                        },
+                        onThemeColorChange = { color ->
+                            lifecycleScope.launch { app.settingsRepository.setThemeColor(color) }
+                        },
+                    )
+
+                    SettingsDestination.FreeWindow -> FreeWindowSettingsScreen(
+                        settings = settings,
+                        onBack = { destination = SettingsDestination.Main },
+                        onEnabledChange = { enabled ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setFreeWindowEnabled(enabled)
+                            }
+                        },
+                        onLaunchPolicyChange = { policyId ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setAppLaunchPolicyId(policyId)
+                            }
+                        },
+                        onLongPressDurationChange = { durationMs ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setLongPressLaunchDurationMs(durationMs)
+                            }
+                        },
+                        onModeChange = { modeId ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setFreeWindowModeId(modeId)
+                            }
+                        },
+                        onOpenPreview = { destination = SettingsDestination.FreeWindowPreview },
+                    )
+
+                    SettingsDestination.FreeWindowPreview -> FreeWindowPreviewScreen(
+                        settings = settings,
+                        onBack = { destination = SettingsDestination.FreeWindow },
+                        onSave = { width, height, left, top ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setFreeWindowLayout(width, height, left, top)
+                            }
+                        },
+                    )
+                }
             }
         }
     }

@@ -63,7 +63,7 @@ class SideOverlayController(
         val view = ContinuousIndexOverlayView(
             context = overlayContext,
             side = side,
-            onLaunchApp = { app -> appRepository.launchApp(app) },
+            onLaunchApp = { app, fullscreen -> appRepository.launchApp(app, settings, fullscreen) },
             onSessionStart = {
                 overlayView?.setPreviewMode(false)
                 expandWindow()

@@ -12,5 +12,13 @@ data class AppSettings(
     val panelOpacity: Float = 0.95f,
     val hapticEnabled: Boolean = true,
     val hapticStrengthLevel: Int = HapticStrength.MEDIUM.level,
+    val freeWindowEnabled: Boolean = false,
+    val freeWindowModeId: Int = FreeWindowMode.detectDefault().id,
+    val freeWindowWidthFraction: Float = 0.8f,
+    val freeWindowHeightFraction: Float = 0.55f,
+    val freeWindowLeftFraction: Float = 0.1f,
+    val freeWindowTopFraction: Float = 0.15f,
+    val appLaunchPolicyId: Int = AppLaunchPolicy.ALWAYS_FULLSCREEN.id,
+    val longPressLaunchDurationMs: Int = 450,
     val themeColorArgb: Int = 0xFF6750A4.toInt(),
 )

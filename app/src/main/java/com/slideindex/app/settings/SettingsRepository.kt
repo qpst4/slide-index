@@ -28,6 +28,14 @@ class SettingsRepository(private val context: Context) {
             panelOpacity = prefs[PANEL_OPACITY] ?: 0.95f,
             hapticEnabled = prefs[HAPTIC_ENABLED] ?: true,
             hapticStrengthLevel = prefs[HAPTIC_STRENGTH] ?: HapticStrength.MEDIUM.level,
+            freeWindowEnabled = prefs[FREE_WINDOW_ENABLED] ?: false,
+            freeWindowModeId = prefs[FREE_WINDOW_MODE] ?: FreeWindowMode.detectDefault().id,
+            freeWindowWidthFraction = prefs[FREE_WINDOW_WIDTH] ?: 0.8f,
+            freeWindowHeightFraction = prefs[FREE_WINDOW_HEIGHT] ?: 0.55f,
+            freeWindowLeftFraction = prefs[FREE_WINDOW_LEFT] ?: 0.1f,
+            freeWindowTopFraction = prefs[FREE_WINDOW_TOP] ?: 0.15f,
+            appLaunchPolicyId = prefs[APP_LAUNCH_POLICY] ?: legacyLaunchPolicy(prefs),
+            longPressLaunchDurationMs = prefs[LONG_PRESS_LAUNCH_DURATION] ?: 450,
             themeColorArgb = prefs[THEME_COLOR] ?: 0xFF6750A4.toInt(),
         )
     }
@@ -48,7 +56,36 @@ class SettingsRepository(private val context: Context) {
             HapticStrength.STRONG.level,
         )
     }
+    suspend fun setFreeWindowEnabled(enabled: Boolean) = edit { it[FREE_WINDOW_ENABLED] = enabled }
+    suspend fun setFreeWindowModeId(id: Int) = edit {
+        it[FREE_WINDOW_MODE] = FreeWindowMode.fromId(id).id
+    }
+    suspend fun setFreeWindowLayout(
+        widthFraction: Float,
+        heightFraction: Float,
+        leftFraction: Float,
+        topFraction: Float,
+    ) = edit {
+        it[FREE_WINDOW_WIDTH] = widthFraction.coerceIn(0.35f, 0.95f)
+        it[FREE_WINDOW_HEIGHT] = heightFraction.coerceIn(0.35f, 0.9f)
+        it[FREE_WINDOW_LEFT] = leftFraction.coerceIn(0f, 0.65f)
+        it[FREE_WINDOW_TOP] = topFraction.coerceIn(0f, 0.65f)
+    }
+    suspend fun setAppLaunchPolicyId(id: Int) = edit {
+        it[APP_LAUNCH_POLICY] = AppLaunchPolicy.fromId(id).id
+    }
+    suspend fun setLongPressLaunchDurationMs(value: Int) = edit {
+        it[LONG_PRESS_LAUNCH_DURATION] = value.coerceIn(250, 900)
+    }
     suspend fun setThemeColor(argb: Int) = edit { it[THEME_COLOR] = argb }
+
+    private fun legacyLaunchPolicy(prefs: Preferences): Int {
+        return if (prefs[FREE_WINDOW_ENABLED] == true) {
+            AppLaunchPolicy.ALWAYS_FREE_WINDOW.id
+        } else {
+            AppLaunchPolicy.ALWAYS_FULLSCREEN.id
+        }
+    }
 
     private suspend fun edit(block: (MutablePreferences) -> Unit) {
         context.dataStore.edit { prefs ->
@@ -68,6 +105,14 @@ class SettingsRepository(private val context: Context) {
         private val PANEL_OPACITY = floatPreferencesKey("panel_opacity")
         private val HAPTIC_ENABLED = booleanPreferencesKey("haptic_enabled")
         private val HAPTIC_STRENGTH = intPreferencesKey("haptic_strength_level")
+        private val FREE_WINDOW_ENABLED = booleanPreferencesKey("free_window_enabled")
+        private val FREE_WINDOW_MODE = intPreferencesKey("free_window_mode_id")
+        private val FREE_WINDOW_WIDTH = floatPreferencesKey("free_window_width_fraction")
+        private val FREE_WINDOW_HEIGHT = floatPreferencesKey("free_window_height_fraction")
+        private val FREE_WINDOW_LEFT = floatPreferencesKey("free_window_left_fraction")
+        private val FREE_WINDOW_TOP = floatPreferencesKey("free_window_top_fraction")
+        private val APP_LAUNCH_POLICY = intPreferencesKey("app_launch_policy_id")
+        private val LONG_PRESS_LAUNCH_DURATION = intPreferencesKey("long_press_launch_duration_ms")
         private val THEME_COLOR = intPreferencesKey("theme_color_argb")
     }
 }

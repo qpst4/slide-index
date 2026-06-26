@@ -53,6 +53,7 @@ fun MainScreen(
     onHapticStrengthChange: (Int) -> Unit,
     onLayoutPreviewStart: () -> Unit,
     onLayoutPreviewStop: () -> Unit,
+    onOpenFreeWindowSettings: () -> Unit,
     onThemeColorChange: (Int) -> Unit,
 ) {
     Column(
@@ -211,6 +212,8 @@ fun MainScreen(
             enabled = settings.serviceEnabled,
             onColorSelected = onThemeColorChange,
         )
+
+        FreeWindowEntryCard(onClick = onOpenFreeWindowSettings)
     }
 }
 

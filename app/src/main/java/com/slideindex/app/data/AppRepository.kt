@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import com.slideindex.app.util.FreeWindowLauncher
 import com.slideindex.app.util.PinyinHelper
+import com.slideindex.app.settings.AppSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -54,11 +56,10 @@ class AppRepository(private val context: Context) {
     fun availableLetters(items: List<AppListItem>): List<Char> =
         items.filterIsInstance<AppListItem.Header>().map { it.letter }
 
-    fun launchApp(appInfo: AppInfo) {
+    fun launchApp(appInfo: AppInfo, settings: AppSettings, fullscreen: Boolean) {
         val intent = context.packageManager.getLaunchIntentForPackage(appInfo.packageName)
             ?: return
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
+        FreeWindowLauncher.launch(context, intent, settings, fullscreen)
     }
 
     private fun queryLaunchableApps(): List<AppInfo> {

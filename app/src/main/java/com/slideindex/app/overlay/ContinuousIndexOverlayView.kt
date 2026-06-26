@@ -13,6 +13,9 @@ import android.view.MotionEvent
 import android.view.View
 import com.slideindex.app.data.AppInfo
 import com.slideindex.app.settings.AppSettings
+import com.slideindex.app.settings.shouldLaunchFullscreen
+import com.slideindex.app.settings.resolvedLaunchPolicy
+import com.slideindex.app.settings.effectiveLongPressDurationMs
 import com.slideindex.app.util.HapticHelper
 import kotlin.math.ceil
 
@@ -22,7 +25,7 @@ import kotlin.math.ceil
 class ContinuousIndexOverlayView(
     context: Context,
     private val side: PanelSide,
-    private val onLaunchApp: (AppInfo) -> Unit,
+    private val onLaunchApp: (AppInfo, Boolean) -> Unit,
     private val onSessionStart: () -> Unit,
     private val onSessionEnd: () -> Unit,
 ) : View(context) {
@@ -37,6 +40,9 @@ class ContinuousIndexOverlayView(
     private var previewMode = false
     private var selectedLetter: Char? = null
     private var highlightedApp: AppInfo? = null
+    private var longPressArmed = false
+    private var longPressTrackingApp: AppInfo? = null
+    private var longPressRunnable: Runnable? = null
 
     private val iconCache = mutableMapOf<String, Bitmap>()
     private val gridCellBounds = mutableListOf<Pair<AppInfo, RectF>>()
@@ -60,6 +66,7 @@ class ContinuousIndexOverlayView(
         color = Color.argb(230, 255, 255, 255)
     }
     private val cellHighlightPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val cellLongPressHighlightPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val triggerPreviewFillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val triggerPreviewStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -114,6 +121,7 @@ class ContinuousIndexOverlayView(
     fun applySettings(newSettings: AppSettings, screenWidth: Int) {
         settings = newSettings
         cellHighlightPaint.color = Color.argb(70, 255, 255, 255)
+        cellLongPressHighlightPaint.color = Color.argb(110, 66, 133, 244)
         invalidate()
     }
 
@@ -180,9 +188,10 @@ class ContinuousIndexOverlayView(
             updateSelection(localX, localY)
             invalidate()
         } else {
-            highlightedApp?.let {
+            highlightedApp?.let { app ->
                 HapticHelper.confirmLaunch(this, settings)
-                onLaunchApp(it)
+                val fullscreen = settings.shouldLaunchFullscreen(longPressArmed)
+                onLaunchApp(app, fullscreen)
             }
             endSession()
         }
@@ -301,7 +310,12 @@ class ContinuousIndexOverlayView(
 
             if (app == highlightedApp) {
                 tmpRect.set(cell.left + dp(3f), cell.top + dp(2f), cell.right - dp(3f), cell.bottom - dp(2f))
-                canvas.drawRoundRect(tmpRect, dp(10f), dp(10f), cellHighlightPaint)
+                val paint = if (app == highlightedApp && longPressArmed) {
+                    cellLongPressHighlightPaint
+                } else {
+                    cellHighlightPaint
+                }
+                canvas.drawRoundRect(tmpRect, dp(10f), dp(10f), paint)
             }
 
             val icon = iconFor(app)
@@ -318,6 +332,7 @@ class ContinuousIndexOverlayView(
 
     private fun updateSelection(localX: Float, localY: Float) {
         if (isInRailZone(localX)) {
+            cancelLongPressTracking()
             letterAtY(localY)?.let { letter ->
                 if (selectedLetter != letter) {
                     selectedLetter = letter
@@ -329,12 +344,36 @@ class ContinuousIndexOverlayView(
         } else {
             val app = appAtGrid(localX, localY)
             if (app != highlightedApp) {
+                cancelLongPressTracking()
                 highlightedApp = app
                 if (app != null) {
                     HapticHelper.appTick(this, settings)
+                    scheduleLongPressTracking(app)
                 }
             }
         }
+    }
+
+    private fun scheduleLongPressTracking(app: AppInfo) {
+        if (!settings.freeWindowEnabled || !settings.resolvedLaunchPolicy().usesLongPress()) return
+        longPressTrackingApp = app
+        longPressArmed = false
+        val runnable = Runnable {
+            if (highlightedApp == longPressTrackingApp && sessionActive) {
+                longPressArmed = true
+                HapticHelper.appTick(this, settings)
+                invalidate()
+            }
+        }
+        longPressRunnable = runnable
+        postDelayed(runnable, settings.effectiveLongPressDurationMs().toLong())
+    }
+
+    private fun cancelLongPressTracking() {
+        longPressRunnable?.let { removeCallbacks(it) }
+        longPressRunnable = null
+        longPressTrackingApp = null
+        longPressArmed = false
     }
 
     private fun isInRailZone(localX: Float): Boolean {
@@ -346,6 +385,7 @@ class ContinuousIndexOverlayView(
     }
 
     private fun endSession() {
+        cancelLongPressTracking()
         sessionActive = false
         selectedLetter = null
         highlightedApp = null
