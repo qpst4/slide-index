@@ -17,6 +17,7 @@ import com.slideindex.app.service.OverlayService
 import com.slideindex.app.settings.AppSettings
 import com.slideindex.app.ui.MainScreen
 import com.slideindex.app.ui.theme.SlideIndexTheme
+import com.slideindex.app.util.HapticHelper
 import com.slideindex.app.util.PermissionHelper
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -87,6 +88,31 @@ class MainActivity : ComponentActivity() {
                     onPanelOpacityChange = { value ->
                         lifecycleScope.launch { app.settingsRepository.setPanelOpacity(value) }
                     },
+                    onHapticEnabledChange = { enabled ->
+                        lifecycleScope.launch {
+                            app.settingsRepository.setHapticEnabled(enabled)
+                            if (enabled) {
+                                val latest = app.settingsRepository.settings.first()
+                                HapticHelper.preview(window.decorView, latest.copy(hapticEnabled = true))
+                            }
+                        }
+                    },
+                    onHapticStrengthChange = { level ->
+                        lifecycleScope.launch {
+                            app.settingsRepository.setHapticStrengthLevel(level)
+                            val latest = app.settingsRepository.settings.first()
+                            HapticHelper.preview(
+                                window.decorView,
+                                latest.copy(hapticEnabled = true, hapticStrengthLevel = level),
+                            )
+                        }
+                    },
+                    onLayoutPreviewStart = {
+                        sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_START)
+                    },
+                    onLayoutPreviewStop = {
+                        sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_STOP)
+                    },
                     onThemeColorChange = { color ->
                         lifecycleScope.launch { app.settingsRepository.setThemeColor(color) }
                     },
@@ -98,7 +124,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         refreshPermissionState()
-        refreshServiceState(startPreviewAfter = true)
+        refreshServiceState()
     }
 
     override fun onPause() {
@@ -117,7 +143,7 @@ class MainActivity : ComponentActivity() {
         notificationGranted = PermissionHelper.hasNotificationPermission(this)
     }
 
-    private fun refreshServiceState(startPreviewAfter: Boolean = false) {
+    private fun refreshServiceState() {
         lifecycleScope.launch {
             val app = application as SlideIndexApp
             val settings = app.settingsRepository.settings.first()
@@ -128,9 +154,6 @@ class MainActivity : ComponentActivity() {
                     startForegroundService(serviceIntent)
                 } else {
                     startService(serviceIntent)
-                }
-                if (startPreviewAfter) {
-                    sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_START)
                 }
             } else {
                 stopService(serviceIntent)

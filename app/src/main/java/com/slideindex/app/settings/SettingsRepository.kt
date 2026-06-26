@@ -26,6 +26,8 @@ class SettingsRepository(private val context: Context) {
             indexHeightFraction = prefs[INDEX_HEIGHT] ?: 0.42f,
             appsPerRow = prefs[APPS_PER_ROW] ?: 3,
             panelOpacity = prefs[PANEL_OPACITY] ?: 0.95f,
+            hapticEnabled = prefs[HAPTIC_ENABLED] ?: true,
+            hapticStrengthLevel = prefs[HAPTIC_STRENGTH] ?: HapticStrength.MEDIUM.level,
             themeColorArgb = prefs[THEME_COLOR] ?: 0xFF6750A4.toInt(),
         )
     }
@@ -39,6 +41,13 @@ class SettingsRepository(private val context: Context) {
     suspend fun setIndexHeightFraction(value: Float) = edit { it[INDEX_HEIGHT] = value }
     suspend fun setAppsPerRow(value: Int) = edit { it[APPS_PER_ROW] = value.coerceIn(2, 5) }
     suspend fun setPanelOpacity(value: Float) = edit { it[PANEL_OPACITY] = value }
+    suspend fun setHapticEnabled(enabled: Boolean) = edit { it[HAPTIC_ENABLED] = enabled }
+    suspend fun setHapticStrengthLevel(level: Int) = edit {
+        it[HAPTIC_STRENGTH] = level.coerceIn(
+            HapticStrength.LIGHT.level,
+            HapticStrength.STRONG.level,
+        )
+    }
     suspend fun setThemeColor(argb: Int) = edit { it[THEME_COLOR] = argb }
 
     private suspend fun edit(block: (MutablePreferences) -> Unit) {
@@ -57,6 +66,8 @@ class SettingsRepository(private val context: Context) {
         private val INDEX_HEIGHT = floatPreferencesKey("index_height_fraction")
         private val APPS_PER_ROW = intPreferencesKey("apps_per_row")
         private val PANEL_OPACITY = floatPreferencesKey("panel_opacity")
+        private val HAPTIC_ENABLED = booleanPreferencesKey("haptic_enabled")
+        private val HAPTIC_STRENGTH = intPreferencesKey("haptic_strength_level")
         private val THEME_COLOR = intPreferencesKey("theme_color_argb")
     }
 }

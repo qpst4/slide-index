@@ -124,7 +124,7 @@ class SideOverlayController(
         params.gravity = Gravity.TOP or Gravity.START
         params.x = 0
         params.y = 0
-        applyNormalTouchFlags(params)
+        applyPreviewTouchFlags(params)
         runCatching { windowManager.updateViewLayout(view, params) }
     }
 
@@ -169,6 +169,13 @@ class SideOverlayController(
         params.flags = params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
         params.flags = params.flags or
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+    }
+
+    private fun applyPreviewTouchFlags(params: WindowManager.LayoutParams) {
+        params.flags = params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv()
+        params.flags = params.flags or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
     }
 

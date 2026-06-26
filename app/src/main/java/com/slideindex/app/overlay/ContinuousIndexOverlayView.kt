@@ -13,6 +13,7 @@ import android.view.MotionEvent
 import android.view.View
 import com.slideindex.app.data.AppInfo
 import com.slideindex.app.settings.AppSettings
+import com.slideindex.app.util.HapticHelper
 import kotlin.math.ceil
 
 /**
@@ -133,14 +134,13 @@ class ContinuousIndexOverlayView(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (previewMode) return false
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 if (sessionActive) return true
                 if (!isInTriggerZone(event.rawX, event.rawY)) return false
-                if (previewMode) {
-                    previewMode = false
-                }
                 sessionActive = true
+                HapticHelper.gestureStart(this, settings)
                 onSessionStart()
                 post { handleTouch(event.rawX, event.rawY, end = false) }
                 return true
@@ -180,7 +180,10 @@ class ContinuousIndexOverlayView(
             updateSelection(localX, localY)
             invalidate()
         } else {
-            highlightedApp?.let(onLaunchApp)
+            highlightedApp?.let {
+                HapticHelper.confirmLaunch(this, settings)
+                onLaunchApp(it)
+            }
             endSession()
         }
     }
@@ -320,10 +323,17 @@ class ContinuousIndexOverlayView(
                     selectedLetter = letter
                     filteredApps = apps.filter { it.letter == letter }
                     highlightedApp = null
+                    HapticHelper.letterTick(this, settings)
                 }
             }
         } else {
-            highlightedApp = appAtGrid(localX, localY)
+            val app = appAtGrid(localX, localY)
+            if (app != highlightedApp) {
+                highlightedApp = app
+                if (app != null) {
+                    HapticHelper.appTick(this, settings)
+                }
+            }
         }
     }
 

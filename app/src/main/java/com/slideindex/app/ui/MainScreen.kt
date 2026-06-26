@@ -19,6 +19,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -45,6 +49,10 @@ fun MainScreen(
     onIndexHeightChange: (Float) -> Unit,
     onAppsPerRowChange: (Int) -> Unit,
     onPanelOpacityChange: (Float) -> Unit,
+    onHapticEnabledChange: (Boolean) -> Unit,
+    onHapticStrengthChange: (Int) -> Unit,
+    onLayoutPreviewStart: () -> Unit,
+    onLayoutPreviewStop: () -> Unit,
     onThemeColorChange: (Int) -> Unit,
 ) {
     Column(
@@ -118,6 +126,9 @@ fun MainScreen(
             valueRange = 12f..36f,
             enabled = settings.serviceEnabled,
             label = "${settings.edgeTriggerWidthDp.roundToInt()} dp",
+            triggersLayoutPreview = true,
+            onLayoutPreviewStart = onLayoutPreviewStart,
+            onLayoutPreviewStop = onLayoutPreviewStop,
             onValueChange = onEdgeWidthChange,
         )
 
@@ -127,6 +138,9 @@ fun MainScreen(
             valueRange = 0.05f..0.65f,
             enabled = settings.serviceEnabled,
             label = "${(settings.triggerTopFraction * 100).roundToInt()}%",
+            triggersLayoutPreview = true,
+            onLayoutPreviewStart = onLayoutPreviewStart,
+            onLayoutPreviewStop = onLayoutPreviewStop,
             onValueChange = onTriggerTopChange,
         )
 
@@ -136,6 +150,9 @@ fun MainScreen(
             valueRange = 0.15f..0.55f,
             enabled = settings.serviceEnabled,
             label = "${(settings.triggerHeightFraction * 100).roundToInt()}%",
+            triggersLayoutPreview = true,
+            onLayoutPreviewStart = onLayoutPreviewStart,
+            onLayoutPreviewStop = onLayoutPreviewStop,
             onValueChange = onTriggerHeightChange,
         )
 
@@ -145,6 +162,9 @@ fun MainScreen(
             valueRange = 0.25f..0.65f,
             enabled = settings.serviceEnabled,
             label = "${(settings.indexHeightFraction * 100).roundToInt()}%",
+            triggersLayoutPreview = true,
+            onLayoutPreviewStart = onLayoutPreviewStart,
+            onLayoutPreviewStop = onLayoutPreviewStop,
             onValueChange = onIndexHeightChange,
         )
 
@@ -167,11 +187,39 @@ fun MainScreen(
             onValueChange = onPanelOpacityChange,
         )
 
+        SettingSwitch(
+            title = stringResource(R.string.haptic_enabled),
+            checked = settings.hapticEnabled,
+            enabled = true,
+            onCheckedChange = onHapticEnabledChange,
+        )
+
+        if (settings.hapticEnabled) {
+            SliderSetting(
+                title = stringResource(R.string.haptic_strength),
+                value = settings.hapticStrengthLevel.toFloat(),
+                valueRange = 0f..2f,
+                steps = 1,
+                enabled = true,
+                label = hapticStrengthLabel(settings.hapticStrengthLevel),
+                onValueChange = { onHapticStrengthChange(it.roundToInt()) },
+            )
+        }
+
         ThemeColorPicker(
             selected = settings.themeColorArgb,
             enabled = settings.serviceEnabled,
             onColorSelected = onThemeColorChange,
         )
+    }
+}
+
+@Composable
+private fun hapticStrengthLabel(level: Int): String {
+    return when (level) {
+        0 -> stringResource(R.string.haptic_strength_light)
+        2 -> stringResource(R.string.haptic_strength_strong)
+        else -> stringResource(R.string.haptic_strength_medium)
     }
 }
 
@@ -224,8 +272,12 @@ private fun SliderSetting(
     steps: Int = 0,
     enabled: Boolean,
     label: String,
+    triggersLayoutPreview: Boolean = false,
+    onLayoutPreviewStart: () -> Unit = {},
+    onLayoutPreviewStop: () -> Unit = {},
     onValueChange: (Float) -> Unit,
 ) {
+    var previewActive by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -236,7 +288,19 @@ private fun SliderSetting(
         }
         Slider(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = {
+                if (triggersLayoutPreview && !previewActive) {
+                    previewActive = true
+                    onLayoutPreviewStart()
+                }
+                onValueChange(it)
+            },
+            onValueChangeFinished = {
+                if (triggersLayoutPreview && previewActive) {
+                    previewActive = false
+                    onLayoutPreviewStop()
+                }
+            },
             valueRange = valueRange,
             steps = steps,
             enabled = enabled,
