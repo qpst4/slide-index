@@ -21,8 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -116,11 +114,7 @@ fun HiddenAppsScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = stringResource(R.string.hidden_apps_section_hidden),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
+            SettingsSectionTitle(stringResource(R.string.hidden_apps_section_hidden))
             Spacer(modifier = Modifier.height(8.dp))
 
             if (hiddenEntries.isEmpty()) {
@@ -148,11 +142,7 @@ fun HiddenAppsScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(R.string.hidden_apps_section_add),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
+            SettingsSectionTitle(stringResource(R.string.hidden_apps_section_add))
             Spacer(modifier = Modifier.height(8.dp))
             SearchBar(
                 query = searchQuery,
@@ -205,40 +195,21 @@ fun HiddenAppsScreen(
 }
 
 @Composable
-fun HiddenAppsEntryCard(onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Default.VisibilityOff, contentDescription = null)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 12.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.hidden_apps_entry_title),
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    text = stringResource(R.string.hidden_apps_entry_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+fun HiddenAppsEntryCard(
+    hiddenCount: Int,
+    onClick: () -> Unit,
+) {
+    val subtitle = if (hiddenCount > 0) {
+        stringResource(R.string.hidden_apps_entry_count, hiddenCount)
+    } else {
+        stringResource(R.string.hidden_apps_entry_desc)
     }
+    SettingNavigationRow(
+        icon = { Icon(Icons.Default.VisibilityOff, contentDescription = null) },
+        title = stringResource(R.string.hidden_apps_entry_title),
+        subtitle = subtitle,
+        onClick = onClick,
+    )
 }
 
 @Composable

@@ -19,6 +19,7 @@ import com.slideindex.app.settings.AppSettings
 import com.slideindex.app.ui.FreeWindowPreviewScreen
 import com.slideindex.app.ui.FreeWindowSettingsScreen
 import com.slideindex.app.ui.HiddenAppsScreen
+import com.slideindex.app.ui.LayoutSettingsScreen
 import com.slideindex.app.ui.MainScreen
 import com.slideindex.app.ui.SettingsDestination
 import com.slideindex.app.ui.theme.SlideIndexTheme
@@ -71,6 +72,46 @@ class MainActivity : ComponentActivity() {
                                 refreshServiceState()
                             }
                         },
+                        onHapticEnabledChange = { enabled ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setHapticEnabled(enabled)
+                                if (enabled) {
+                                    val latest = app.settingsRepository.settings.first()
+                                    HapticHelper.preview(window.decorView, latest.copy(hapticEnabled = true))
+                                }
+                            }
+                        },
+                        onHapticStrengthChange = { level ->
+                            lifecycleScope.launch {
+                                app.settingsRepository.setHapticStrengthLevel(level)
+                                val latest = app.settingsRepository.settings.first()
+                                HapticHelper.preview(
+                                    window.decorView,
+                                    latest.copy(hapticEnabled = true, hapticStrengthLevel = level),
+                                )
+                            }
+                        },
+                        onOpenLayoutSettings = {
+                            destination = SettingsDestination.Layout
+                        },
+                        onOpenFreeWindowSettings = {
+                            destination = SettingsDestination.FreeWindow
+                        },
+                        onOpenHiddenAppsSettings = {
+                            destination = SettingsDestination.HiddenApps
+                        },
+                        onThemeColorChange = { color ->
+                            lifecycleScope.launch { app.settingsRepository.setThemeColor(color) }
+                        },
+                    )
+
+                    SettingsDestination.Layout -> LayoutSettingsScreen(
+                        settings = settings,
+                        serviceEnabled = settings.serviceEnabled,
+                        onBack = {
+                            sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_STOP)
+                            destination = SettingsDestination.Main
+                        },
                         onLeftEdgeChange = { enabled ->
                             lifecycleScope.launch { app.settingsRepository.setLeftEdgeEnabled(enabled) }
                         },
@@ -95,39 +136,11 @@ class MainActivity : ComponentActivity() {
                         onPanelOpacityChange = { value ->
                             lifecycleScope.launch { app.settingsRepository.setPanelOpacity(value) }
                         },
-                        onHapticEnabledChange = { enabled ->
-                            lifecycleScope.launch {
-                                app.settingsRepository.setHapticEnabled(enabled)
-                                if (enabled) {
-                                    val latest = app.settingsRepository.settings.first()
-                                    HapticHelper.preview(window.decorView, latest.copy(hapticEnabled = true))
-                                }
-                            }
-                        },
-                        onHapticStrengthChange = { level ->
-                            lifecycleScope.launch {
-                                app.settingsRepository.setHapticStrengthLevel(level)
-                                val latest = app.settingsRepository.settings.first()
-                                HapticHelper.preview(
-                                    window.decorView,
-                                    latest.copy(hapticEnabled = true, hapticStrengthLevel = level),
-                                )
-                            }
-                        },
                         onLayoutPreviewStart = {
                             sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_START)
                         },
                         onLayoutPreviewStop = {
                             sendOverlayPreviewIntent(OverlayService.ACTION_PREVIEW_STOP)
-                        },
-                        onOpenFreeWindowSettings = {
-                            destination = SettingsDestination.FreeWindow
-                        },
-                        onOpenHiddenAppsSettings = {
-                            destination = SettingsDestination.HiddenApps
-                        },
-                        onThemeColorChange = { color ->
-                            lifecycleScope.launch { app.settingsRepository.setThemeColor(color) }
                         },
                     )
 

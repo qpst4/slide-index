@@ -4,26 +4,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CropFree
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -89,8 +81,9 @@ fun FreeWindowSettingsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            SettingsSectionTitle(stringResource(R.string.settings_section_service))
             SettingsCard {
                 SettingToggleRow(
                     icon = { Icon(Icons.Default.PowerSettingsNew, contentDescription = null) },
@@ -100,23 +93,17 @@ fun FreeWindowSettingsScreen(
                     onCheckedChange = onEnabledChange,
                 )
             }
+            SettingsHintText(stringResource(R.string.free_window_portrait_only_hint))
 
-            Text(
-                text = stringResource(R.string.free_window_portrait_only_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
+            SettingsSectionTitle(stringResource(R.string.settings_section_launch))
             SettingsCard {
                 SettingNavigationRow(
                     icon = { Icon(Icons.Default.TouchApp, contentDescription = null) },
                     title = stringResource(R.string.launch_policy_title),
                     subtitle = stringResource(selectedPolicy.titleRes),
-                    enabled = true,
                     onClick = { showPolicyDialog = true },
                 )
             }
-
             if (showLongPressDuration) {
                 SettingsCard {
                     Column(
@@ -133,11 +120,11 @@ fun FreeWindowSettingsScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.End,
                         ) {
                             Text(
                                 text = stringResource(
@@ -160,6 +147,7 @@ fun FreeWindowSettingsScreen(
                 }
             }
 
+            SettingsSectionTitle(stringResource(R.string.settings_section_free_window))
             SettingsCard {
                 SettingNavigationRow(
                     icon = { Icon(Icons.Default.Layers, contentDescription = null) },
@@ -168,9 +156,6 @@ fun FreeWindowSettingsScreen(
                     enabled = settings.freeWindowEnabled,
                     onClick = { showModeDialog = true },
                 )
-            }
-
-            SettingsCard {
                 SettingNavigationRow(
                     icon = { Icon(Icons.Default.Tune, contentDescription = null) },
                     title = stringResource(R.string.free_window_adjust_layout),
@@ -179,12 +164,7 @@ fun FreeWindowSettingsScreen(
                     onClick = onOpenPreview,
                 )
             }
-
-            Text(
-                text = stringResource(R.string.free_window_mode_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            SettingsHintText(stringResource(R.string.free_window_mode_hint))
         }
     }
 
@@ -284,135 +264,11 @@ fun FreeWindowSettingsScreen(
 }
 
 @Composable
-private fun SettingsCard(content: @Composable () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun SettingToggleRow(
-    icon: @Composable () -> Unit,
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        icon()
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 12.dp),
-        ) {
-            Text(title, fontWeight = FontWeight.Medium)
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
-    }
-}
-
-@Composable
-private fun SettingNavigationRow(
-    icon: @Composable () -> Unit,
-    title: String,
-    subtitle: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        icon()
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 12.dp),
-        ) {
-            Text(
-                text = title,
-                fontWeight = FontWeight.Medium,
-                color = if (enabled) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
-                },
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
-            contentDescription = null,
-            modifier = Modifier
-                .size(18.dp)
-                .padding(4.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
 fun FreeWindowEntryCard(onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Default.CropFree, contentDescription = null)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 12.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.free_window_entry_title),
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    text = stringResource(R.string.free_window_entry_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    SettingNavigationRow(
+        icon = { Icon(Icons.Default.CropFree, contentDescription = null) },
+        title = stringResource(R.string.free_window_entry_title),
+        subtitle = stringResource(R.string.free_window_entry_desc),
+        onClick = onClick,
+    )
 }

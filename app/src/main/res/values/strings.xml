@@ -24,6 +24,16 @@
     <string name="haptic_strength_medium">中</string>
     <string name="haptic_strength_strong">强</string>
     <string name="theme_color">主题色</string>
+    <string name="settings_section_service">服务</string>
+    <string name="settings_section_layout">布局与索引</string>
+    <string name="settings_section_trigger">边缘触发</string>
+    <string name="settings_section_panel">索引与面板</string>
+    <string name="settings_section_apps">应用与启动</string>
+    <string name="settings_section_feedback">交互反馈</string>
+    <string name="settings_section_appearance">外观</string>
+    <string name="settings_section_launch">启动方式</string>
+    <string name="settings_section_free_window">小窗配置</string>
+    <string name="hidden_apps_entry_count">已隐藏 %1$d 个应用</string>
     <string name="search_hint">搜索应用…</string>
     <string name="no_apps">未找到应用</string>
     <string name="loading">加载中…</string>
@@ -77,4 +87,12 @@
     <string name="hidden_apps_hide">隐藏</string>
     <string name="hidden_apps_unhide">取消隐藏</string>
     <string name="hidden_apps_uninstalled">应用已卸载</string>
+    <string name="layout_settings_title">布局与索引</string>
+    <string name="layout_settings_entry_title">布局调整</string>
+    <string name="layout_settings_entry_desc">调节触发区、索引与应用面板</string>
+    <string name="layout_settings_entry_summary">%1$s · 每行 %2$d 列</string>
+    <string name="layout_settings_edges_both">左右边缘</string>
+    <string name="layout_settings_edges_left">左边缘</string>
+    <string name="layout_settings_edges_right">右边缘</string>
+    <string name="layout_settings_edges_none">边缘未启用</string>
 </resources>
