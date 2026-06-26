@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">侧滑索引</string>
+    <string name="service_notification_title">侧滑索引运行中</string>
+    <string name="service_notification_text">从屏幕边缘滑动打开应用索引</string>
+    <string name="permission_overlay_title">悬浮窗权限</string>
+    <string name="permission_overlay_desc">需要悬浮窗权限才能在屏幕边缘显示侧滑索引面板</string>
+    <string name="permission_notification_title">通知权限</string>
+    <string name="permission_notification_desc">需要通知权限以保持后台服务运行</string>
+    <string name="grant_permission">去授权</string>
+    <string name="service_enabled">启用侧滑索引</string>
+    <string name="left_edge">左边缘侧滑</string>
+    <string name="right_edge">右边缘侧滑</string>
+    <string name="live_preview_hint">拖动下方滑块时，屏幕边缘会实时显示触发区与字母索引；也可直接在边缘试用手势，无需返回桌面</string>
+    <string name="edge_width">触发区横向宽度</string>
+    <string name="trigger_top">触发区竖向位置</string>
+    <string name="trigger_height">触发区竖向长度</string>
+    <string name="index_height">字母索引长度</string>
+    <string name="apps_per_row">每行应用数</string>
+    <string name="panel_opacity">面板不透明度</string>
+    <string name="theme_color">主题色</string>
+    <string name="search_hint">搜索应用…</string>
+    <string name="no_apps">未找到应用</string>
+    <string name="loading">加载中…</string>
+    <string name="ready_hint">在屏幕边缘触发区按住，字母索引才会出现；上下滑选字母，移到应用图标上松开即可打开</string>
+</resources>

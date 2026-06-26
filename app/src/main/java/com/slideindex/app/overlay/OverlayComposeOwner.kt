@@ -1,0 +1,57 @@
+package com.slideindex.app.overlay
+
+import android.content.Context
+import android.view.ContextThemeWrapper
+import android.view.View
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.SavedStateRegistryController
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.slideindex.app.R
+
+class OverlayComposeOwner : LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
+    private val registry = LifecycleRegistry(this)
+    private val savedStateController = SavedStateRegistryController.create(this)
+
+    override val lifecycle: Lifecycle get() = registry
+    override val savedStateRegistry: SavedStateRegistry get() = savedStateController.savedStateRegistry
+    override val viewModelStore = ViewModelStore()
+
+    init {
+        savedStateController.performAttach()
+        savedStateController.performRestore(null)
+        registry.currentState = Lifecycle.State.RESUMED
+    }
+
+    fun destroy() {
+        registry.currentState = Lifecycle.State.DESTROYED
+        viewModelStore.clear()
+    }
+}
+
+object OverlayCompose {
+    fun themedContext(context: Context): Context =
+        ContextThemeWrapper(context.applicationContext, R.style.Theme_SlideIndex)
+
+    fun bindOwners(view: View, owner: OverlayComposeOwner) {
+        view.setViewTreeLifecycleOwner(owner)
+        view.setViewTreeSavedStateRegistryOwner(owner)
+        view.setViewTreeViewModelStoreOwner(owner)
+    }
+
+    fun createComposeView(context: Context, owner: OverlayComposeOwner): ComposeView {
+        return ComposeView(themedContext(context)).apply {
+            bindOwners(this, owner)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        }
+    }
+}
